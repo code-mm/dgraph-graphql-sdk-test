@@ -15,10 +15,6 @@ public class Main {
     public static void main(String[] args) {
         GraphClient graphClient = GraphClient.getInstance();
         graphClient.setBaseUrl("http://dev.mhw828.com:8080/graphql");
-        Map<String, String> map = new HashMap<>();
-        map.put("", "");
-        map.put("", "");
-        graphClient.setHeaders(map);
 
         graphClient.mutateGraph(Operations.mutation(mutationQuery -> {
             List<AddProductInput> list = new ArrayList<>();
@@ -45,7 +41,7 @@ public class Main {
             public void onSuccess(Mutation mutation) {
                 List<Product> product = mutation.getAddProduct().getProduct();
                 for (Product it : product) {
-                    System.out.println("id : " + it.getProductId() + " name : " + it.getName());
+                    System.out.println("插入成功 : id : " + it.getProductId() + " name : " + it.getName());
                 }
             }
             @Override
@@ -70,7 +66,7 @@ public class Main {
                     public void onSuccess(QueryRoot queryRoot) {
                         List<Product> queryProduct = queryRoot.getQueryProduct();
                         for (Product it : queryProduct) {
-                            System.out.println("id : " + it.getProductId() + " name : " + it.getName());
+                            System.out.println("查询成功 : id : " + it.getProductId() + " name : " + it.getName());
                         }
                     }
                     @Override
