@@ -15,22 +15,18 @@ import okhttp3.OkHttpClient;
 public class Main {
 
     public static void main(String[] args) {
-        GraphClient graphClient = GraphClient.getInstance();
-        graphClient.setBaseUrl("http://localhost:8080/graphql");
 
-        OkHttpClient okHttpClient = new OkHttpClient.Builder()
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Content-Type", "application/json");
+
+        GraphClient graphClient = GraphClient.builder().setHttpClient(new OkHttpClient.Builder()
                 .readTimeout(60, TimeUnit.SECONDS)
                 .writeTimeout(60, TimeUnit.SECONDS)
                 .connectTimeout(60, TimeUnit.SECONDS)
+                .build())
+                .setHeaders(headers)
+                .setUrl("http://localhost:8080/graphql")
                 .build();
-        // 设置客户端
-        graphClient.setHttpClient(okHttpClient);
-
-        // 设置请求头
-        Map<String, String> header = new HashMap<>();
-        header.put("Content-Type", "application/json");
-        graphClient.setHeaders(header);
-
 
         graphClient.mutateGraph(Operations.mutation(mutationQuery -> {
             List<AddProductInput> list = new ArrayList<>();
