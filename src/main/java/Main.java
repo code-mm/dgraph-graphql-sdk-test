@@ -1,9 +1,6 @@
 import com.dgraph.graphql.*;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import com.bdlbsc.graphql.*;
@@ -13,6 +10,7 @@ import okhttp3.OkHttpClient;
 
 
 public class Main {
+
 
     public static void main(String[] args) {
 
@@ -28,68 +26,60 @@ public class Main {
                 .setUrl("http://localhost:8080/graphql")
                 .build();
 
-        graphClient.mutateGraph(Operations.mutation(mutationQuery -> {
-            List<AddProductInput> list = new ArrayList<>();
-            for (int i = 0; i < 10; i++) {
-                AddProductInput addProductInput = new AddProductInput();
-                addProductInput.setName("测试商品" + i);
-                list.add(addProductInput);
-            }
-            mutationQuery.addProduct(list, addProductPayloadQuery -> {
-                addProductPayloadQuery
-                        .numUids();
-                addProductPayloadQuery.product(productQuery -> {
-                    productQuery.name();
-                    productQuery.productId();
+        // 异步
+//        graphClient.mutateGraph(Operations.mutation(mutationQuery -> {
+//            AddUserInput addUserInput = new AddUserInput("hahah002", "hahah002", "hahah002");
+//            mutationQuery.addUser(Arrays.asList(addUserInput), addUserPayloadQuery -> {
+//                addUserPayloadQuery.numUids();
+//                addUserPayloadQuery.user(userQuery -> {
+//                    userQuery.id();
+//                    userQuery.name();
+//                    userQuery.username();
+//                    userQuery.password();
+//                });
+//            });
+//        })).subscribe(new io.reactivex.SingleObserver<Mutation>() {
+//            @Override
+//            public void onSubscribe(Disposable d) {
+//            }
+//            @Override
+//            public void onSuccess(Mutation mutation) {
+//                Integer numUids = mutation.getAddUser().getNumUids();
+//                System.out.println(numUids);
+//                List<User> user = mutation.getAddUser().getUser();
+//                for (User it : user) {
+//                    System.out.println("name : " + it.getName() + " username : " + it.getUsername() + " password : " + it.getPassword());
+//                }
+//            }
+//            @Override
+//            public void onError(Throwable e) {
+//                e.printStackTrace();
+//            }
+//        });
+
+
+        try {
+            // 同步
+            Mutation mutation = graphClient.mutateGraphSynchronize(Operations.mutation(mutationQuery -> {
+                AddUserInput addUserInput = new AddUserInput("hahah003", "hahah003", "hahah003");
+                mutationQuery.addUser(Arrays.asList(addUserInput), addUserPayloadQuery -> {
+                    addUserPayloadQuery.numUids();
+                    addUserPayloadQuery.user(userQuery -> {
+                        userQuery.id();
+                        userQuery.name();
+                        userQuery.username();
+                        userQuery.password();
+                    });
                 });
-            });
-        })).subscribe(new io.reactivex.SingleObserver<Mutation>() {
-            @Override
-            public void onSubscribe(Disposable d) {
-
+            }));
+            List<User> user = mutation.getAddUser().getUser();
+            for (User it : user) {
+                System.out.println("name : " + it.getName() + " username : " + it.getUsername() + " password : " + it.getPassword());
             }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
-            @Override
-            public void onSuccess(Mutation mutation) {
-                List<Product> product = mutation.getAddProduct().getProduct();
-                for (Product it : product) {
-                    System.out.println("插入成功 : id : " + it.getProductId() + " name : " + it.getName());
-                }
-            }
-
-            @Override
-            public void onError(Throwable e) {
-                e.printStackTrace();
-            }
-        });
-
-
-        graphClient.queryGraph(Operations.query(queryRootQuery -> queryRootQuery.queryProduct(new ProductQueryDefinition() {
-            @Override
-            public void define(ProductQuery productQuery) {
-                productQuery.name();
-                productQuery.productId();
-            }
-        })))
-                .subscribe(new SingleObserver<QueryRoot>() {
-                    @Override
-                    public void onSubscribe(Disposable d) {
-                    }
-
-                    @Override
-                    public void onSuccess(QueryRoot queryRoot) {
-                        List<Product> queryProduct = queryRoot.getQueryProduct();
-                        for (Product it : queryProduct) {
-                            System.out.println("查询成功 : id : " + it.getProductId() + " name : " + it.getName());
-                        }
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-                        e.printStackTrace();
-                        System.out.println(e.getMessage());
-                    }
-                });
         try {
             Thread.currentThread().join();
         } catch (InterruptedException e) {
